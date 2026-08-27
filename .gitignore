@@ -1,0 +1,27 @@
+# Meson build output
+/build/
+/build-*/
+
+# Pinned upstream Mesa checkout -- large (600+ MB) and fetched by
+# scripts/fetch-mesa.sh rather than committed. subprojects/mesa is a
+# symlink to this directory.
+/vendor/mesa-src/
+
+# Object files / compiled binaries from manual (non-Meson) test builds
+*.o
+*.a
+*.so
+*.so.*
+
+# Meson auto-generates these wrap-redirect/lock files in subprojects/
+# during `meson setup` while resolving the mesa subproject's own nested
+# dependency fallbacks (zlib/expat/libdrm). Not authored, not needed for
+# a clean checkout -- subprojects/mesa (the symlink) is the only thing
+# here that's actually ours.
+/subprojects/*.wrap
+/subprojects/.wraplock
+
+# Editor / OS cruft
+.vscode/
+*.swp
+.DS_Store
