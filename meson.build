@@ -69,4 +69,42 @@ aco_standalone_dep = declare_dependency(
   ],
 )
 
+# plans/vertex_pixel_draw_plan.md Batch 0: everything vk_reference_trace.c
+# (third_party/shader_bridge/) needs to reach RADV's internal
+# struct radv_cmd_buffer/struct ac_cmdbuf directly (see that file's own top
+# comment for why -- recording a real draw through the real driver without
+# ever submitting it, then decoding the recorded PM4 bytes on the CPU).
+# Mirrors aco_standalone_dep's own approach: pull already-configured pieces
+# straight out of the vendored mesa subproject, add nothing new to it.
+# radv_cmd_buffer.h itself isn't exposed via any inc_* variable (it's only
+# ever included via a bare include_directories('.') inline in
+# src/amd/vulkan/meson.build), so it's reached with a plain relative path
+# into the pristine vendored checkout instead.
+radv_internal_dep = declare_dependency(
+  dependencies : [
+    mesa.get_variable('idep_vulkan_util'),
+    mesa.get_variable('idep_vulkan_runtime'),
+    mesa.get_variable('idep_vulkan_wsi'),
+    mesa.get_variable('idep_xmlconfig'),
+    mesa.get_variable('idep_radv_tracepoints'),
+  ],
+  include_directories : [
+    mesa.get_variable('inc_include'),
+    mesa.get_variable('inc_src'),
+    mesa.get_variable('inc_amd'),
+    mesa.get_variable('inc_amd_common'),
+    mesa.get_variable('inc_amd_common_llvm'),
+    mesa.get_variable('inc_util'),
+    mesa.get_variable('inc_virtio_gpu'),
+    include_directories('vendor/mesa-src/src/amd/vulkan'),
+  ],
+  # The generated radv_entrypoints.h -- listed as a source (not linked) so
+  # Meson builds it and puts it on the include path before compiling
+  # anything that depends on this; Meson only compiles recognized .c/.cpp
+  # suffixes from a sources list, so the paired generated .c is inert here.
+  sources : [
+    mesa.get_variable('radv_entrypoints')[0],
+  ],
+)
+
 subdir('example')
